@@ -6,7 +6,7 @@ setup(
     name='iot_device_provisioner',
     version='1.0.0',
     description='AWS IoT Device Provisioner',
-    packages=['jitp'],
+    packages=['jitp', 'jitp.utilities'],
     install_requires=[
         'fire',
         'boto3',

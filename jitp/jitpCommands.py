@@ -9,7 +9,10 @@ import sys
 from botocore.exceptions import ClientError
 from OpenSSL import crypto, SSL
 
-from jitp.utilities import generateCertFiles
+from utilities.certgen import (createKeyPair, createCertRequest,
+    createCertificate, createCertFile, loadCertFile)
+from utilities.tempgen import (createProvisionTemplate)
+from utilities.uuidgen import (createEWonSerial)
 
 
 logging.basicConfig(
@@ -31,10 +34,11 @@ class jitpCommands(object):
         if not s.region_name:
             raise Exception("AWS Credentials and Region must be setup")
 
-        self._region       = s.region_name
-        self._iam          = s.client('iam')
-        self._iot          = s.client('iot')
-        self._iot_endpoint = self._iot.describe_endpoint()['endpointAddress']
+        self._region         = s.region_name
+        self._iam            = s.client('iam')
+        self._iot            = s.client('iot')
+        self._iot_endpoint   = self._iot.describe_endpoint()['endpointAddress']
+        self._cloudformation = s.client('cloudformation')
 
 
     def create_service_role(self, roleName='IoT_JITP_Role'):
@@ -290,6 +294,83 @@ class jitpCommands(object):
                 'fetch successful.').format(roleName))
 
         return artifacts if artifacts else None
+
+
+    def generate_rootCA_cert(self, nodeName='rootCA'):
+        ''' Generate a rootCA Certificate.
+        '''
+        crtFile = '{}.crt'.format(nodeName)
+        keyFile = '{}.key'.format(nodeName)
+        csrFile = '{}.csr'.format(nodeName)
+
+        caKey  = createKeyPair(crypto.TYPE_RSA, 2048)
+        caReq  = createCertRequest(caKey)
+
+        # CA certificate is valid for two years.
+        caCert = createCertificate(caReq, (caReq, caKey), 0, (0, 60*60*24*365*2), isCA=True)
+
+        createCertFile(crtFile, caCert)
+        createCertFile(keyFile, caKey)
+        createCertFile(csrFile, caReq)
+        return caKey, caReq
+
+
+    def generate_things_cert(self, thingName, productCode, productNumber,
+            CAKey='rootCA.key', CACert='rootCA.crt'):
+        ''' Generate a Things Certificate.
+        '''
+        if not (os.path.exists(CAKey)):
+            raise IOError('CA Key not found')
+
+        if not (os.path.exists(CACert)):
+            raise IOError('CA Cert not found')
+
+        caKey  = loadCertFile(CAKey)
+        caCert = loadCertFile(CACert)
+
+        registrationCode = self._iot.get_registration_code()['registrationCode']
+        serialNumber = createEWonSerial(productCode, productNumber)
+
+        for nodeName in ['Device', 'Verify']:
+
+            crtFile = '{}{}.crt'.format(thingName, nodeName)
+            keyFile = '{}{}.key'.format(thingName, nodeName)
+
+            pkey = createKeyPair(crypto.TYPE_RSA, 2048)
+            req  = createCertRequest(pkey, CN=registrationCode)
+
+            cert = createCertificate(req, (caCert, caKey), serialNumber, (0, 60*60*24*365*5))
+
+            createCertFile(crtFile, cert)
+            createCertFile(keyFile, pkey)
+
+
+    def register_things_cert(self, CACert, VerifyCert, roleName):
+        ''' Register a Things Certificate.
+        '''
+        if not (os.path.exists(CACert)):
+            raise IOError('CA Cert not found')
+
+        if not (os.path.exists(VerifyCert)):
+            raise IOError('Verify Cert not found')
+
+        caCert      = loadCertFile(CACert)
+        verifyCert  = loadCertFile(VerifyCert)
+        serviceRole = self.fetch_service_role(roleName)
+
+        try:
+            self._iot.register_ca_certificate(
+                caCertificate=str(crypto.dump_certificate(
+                    crypto.FILETYPE_PEM, caCert
+                )).decode('utf-8'),
+                verificationCertificate=str(crypto.dump_certificate(
+                    crypto.FILETYPE_PEM, verifyCert
+                )).decode('utf-8'),
+                setAsActive=True,
+                allowAutoRegistration=False
+            )
+        except ClientError as e:
+            print(e)
 
 
 def main():

@@ -1,3 +1,9 @@
+# artifacts
+*.key
+*.crt
+*.pem
+*.csr
+
 #vim
 *.swp
 *.swo
