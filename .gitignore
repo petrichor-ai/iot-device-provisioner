@@ -3,6 +3,7 @@
 *.crt
 *.pem
 *.csr
+*.cert
 
 #vim
 *.swp

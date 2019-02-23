@@ -4,14 +4,10 @@ import json
 import logging
 import os
 import random
+import requests
 import sys
 
 from botocore.exceptions import ClientError
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.x509.oid import NameOID
 from OpenSSL import crypto, SSL
 
 from utilities.certgen import (createKeyPair, createCertRequest,
@@ -313,7 +309,8 @@ class jitpCommands(object):
         caKey  = createKeyPair(crypto.TYPE_RSA, 2048)
 
         # Create rootCA Certificate
-        caPem = createSelfSignedCertificate(caKey, 50000000, (0, 60*60*24*365*5))
+        serialNumber = random.randint(1000000, 9000000)
+        caPem = createSelfSignedCertificate(caKey, serialNumber, (0, 60*60*24*365*5))
 
         # Create rootCA Pem/Key local files
         createCertFile(pemFileOut, caPem)
@@ -321,7 +318,8 @@ class jitpCommands(object):
 
 
     def generate_verify_cert(self, certName='verifyCert', CA='rootCA', CAPath='./'):
-
+        ''' Generate a Verification Certificate.
+        '''
         pemFileOut = '{}.pem'.format(certName)
         keyFileOut = '{}.key'.format(certName)
 
@@ -339,7 +337,8 @@ class jitpCommands(object):
         verifyReq = createCertRequest(verifyKey, C='US', ST='CA', L='LA', CN=regCode)
 
         # Create verifyCert Certificate
-        verifyPem = createSignedCertificate(verifyReq, (caPem, caKey), 1, (0, 60*60*24*365*5))
+        serialNumber = random.randint(1000000, 9000000)
+        verifyPem = createSignedCertificate(verifyReq, (caPem, caKey), serialNumber, (0, 60*60*24*365*5))
 
         # Create verifyCert Pem/Key local files
         createCertFile(pemFileOut, verifyPem)
@@ -348,6 +347,7 @@ class jitpCommands(object):
 
         # Register verifyCert/rootCA with AWS IoT
         try:
+            roleArn = self.fetch_service_role()['Arn']
             self._iot.register_ca_certificate(
                 caCertificate=str(crypto.dump_certificate(
                     crypto.FILETYPE_PEM, caPem
@@ -355,19 +355,69 @@ class jitpCommands(object):
                 verificationCertificate=str(crypto.dump_certificate(
                     crypto.FILETYPE_PEM, verifyPem
                 )).decode('utf-8'),
+                setAsActive=True,
+                allowAutoRegistration=True,
+                registrationConfig=createProvisionTemplate(roleArn)
+            )
+
+            self._iot.register_certificate(
+                certificatePem=str(crypto.dump_certificate(
+                    crypto.FILETYPE_PEM, verifyPem
+                )).decode('utf-8'),
+                caCertificatePem=str(crypto.dump_certificate(
+                    crypto.FILETYPE_PEM, caPem
+                )).decode('utf-8'),
                 setAsActive=True
             )
         except ClientError as e:
             print(e)
+            if e.response['Error']['Code'] == 'ResourceAlreadyExistsException':
+                log.error(e.response['Error']['Message'])
+                log.info('Regenerate rootCA and retry...')
 
 
     def generate_device_cert(self, certName='deviceCert', CA='rootCA', CAPath='./'):
-        pass
+        ''' Generate a Device Certificate.
+        '''
+        pemFileOut = '{}.pem'.format(certName)
+        keyFileOut = '{}.key'.format(certName)
 
+        caPem = loadCertFile('{}.pem'.format(CA), CAPath)
+        caKey = loadCertFile('{}.key'.format(CA), CAPath)
+
+
+        # Retreive AWS IoT Cert Registration Code
+        regCode = self._iot.get_registration_code()['registrationCode']
+
+        # Create deviceCert KeyPair
+        deviceKey  = createKeyPair(crypto.TYPE_RSA, 2048)
+
+        # Create deviceCert Signing Request
+        deviceReq = createCertRequest(deviceKey, C='US', ST='CA', L='LA', CN=regCode)
+
+        # Create deviceCert Certificate
+        serialNumber = random.randint(1000000, 9000000)
+        devicePem = createSignedCertificate(deviceReq, (caPem, caKey), serialNumber, (0, 60*60*24*365*5))
+
+        # Create deviceCert Pem/Key local files
+        createCertFile(pemFileOut, devicePem)
+        createCertFile(keyFileOut, deviceKey)
+
+
+    def fetch_iot_root_cert(self, certName='root'):
+
+        pemFileOut = '{}.cert'.format(certName)
+
+        # Fetch Symantec rootCA
+        resp = requests.get('https://www.symantec.com/content/en/us/enterprise/verisign/roots/VeriSign-Class%203-Public-Primary-Certification-Authority-G5.pem')
+
+        # Create Symantec rootCA local file
+        createCertFile(pemFileOut, resp.text)
 
 
 def main():
     fire.Fire(jitpCommands())
+
 
 
 if __name__ == '__main__':

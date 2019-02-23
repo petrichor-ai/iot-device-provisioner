@@ -74,5 +74,5 @@ def createProvisionTemplate(roleArn):
     '''
     template = {}
     template["roleArn"] = roleArn
-    template["templateBody"] = TEMPLATE_BODY
+    template["templateBody"] = TEMPLATE_BODY.replace('\n', '').replace(' ', '')
     return template

@@ -11,7 +11,8 @@ setup(
         'fire',
         'boto3',
         'botocore',
-        'pyopenssl'
+        'pyopenssl',
+        'requests'
     ],
     entry_points={
         'console_scripts': ['jitp=jitp.jitpCommands:main'],

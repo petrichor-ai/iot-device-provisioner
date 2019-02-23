@@ -117,6 +117,10 @@ def createCertFile(dumpFile, request):
             )
             log.info('dumpFile PrivateKey: {}, dumped successfully.'.format(dumpFile))
 
+        if any(check in dumpFile for check in ['.cert']):
+            f.write(request)
+            log.info('dumpFile Symantec rootCA: {}, dumped successfully.'.format(dumpFile))
+
 
 def loadCertFile(rdFile, rdPath):
     ''' Load .crt/csr/key files.
