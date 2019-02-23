@@ -1,4 +1,16 @@
 import json
+import logging
+import os
+
+
+logging.basicConfig(
+    format='%(asctime)s|%(name).10s|%(levelname).5s: %(message)s',
+    level=logging.WARNING
+)
+
+log = logging.getLogger('tempgen')
+log.setLevel(logging.DEBUG)
+
 
 
 TEMPLATE_BODY = \

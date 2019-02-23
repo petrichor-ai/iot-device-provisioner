@@ -1,4 +1,16 @@
 import datetime
+import json
+import logging
+import os
+
+
+logging.basicConfig(
+    format='%(asctime)s|%(name).10s|%(levelname).5s: %(message)s',
+    level=logging.WARNING
+)
+
+log = logging.getLogger('uuidgen')
+log.setLevel(logging.DEBUG)
 
 
 
@@ -10,4 +22,7 @@ def createEWonSerial(productCode, productNumber):
     yyww = yy + ww
     productCode = str(productCode).zfill(4)
     productNumber = str(productNumber).zfill(6)
-    return int('{}{}{}'.format(yyww, productNumber, productCode))
+
+    ewonSerial = int('{}{}{}'.format(yyww, productNumber, productCode))
+    log.info('Created EWon Serial Number: {}'.format(ewonSerial))
+    return ewonSerial
