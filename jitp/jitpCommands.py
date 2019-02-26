@@ -298,6 +298,10 @@ class jitpCommands(object):
         return artifacts if artifacts else None
 
 
+    def create_device_role(self, roleName='IoTAccess'):
+        
+
+
     def generate_rootCA_cert(self, certName='rootCA'):
         ''' Generate a rootCA Certificate.
         '''
@@ -376,7 +380,8 @@ class jitpCommands(object):
                 log.info('Regenerate rootCA and retry...')
 
 
-    def generate_device_cert(self, certName='deviceCert', CA='rootCA', CAPath='./'):
+    def generate_device_cert(self, certName='deviceCert', productCode=1,
+            productNumber=1, CA='rootCA', CAPath='./'):
         ''' Generate a Device Certificate.
         '''
         pemFileOut = '{}.pem'.format(certName)
@@ -396,7 +401,7 @@ class jitpCommands(object):
         deviceReq = createCertRequest(deviceKey, C='US', ST='CA', L='LA', CN=regCode)
 
         # Create deviceCert Certificate
-        serialNumber = random.randint(1000000, 9000000)
+        serialNumber = createEWonSerial(productCode, productNumber)
         devicePem = createSignedCertificate(deviceReq, (caPem, caKey), serialNumber, (0, 60*60*24*365*5))
 
         # Create deviceCert Pem/Key local files

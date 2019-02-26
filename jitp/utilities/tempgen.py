@@ -21,6 +21,9 @@ TEMPLATE_BODY = \
         },
         \"AWS::IoT::Certificate::Id\" : {
             \"Type\" : \"String\"
+        },
+        \"AWS::IoT::Certificate::SerialNumber\" : {
+            \"Type\" : \"String\"
         }
     },
     \"Resources\" : {
@@ -28,13 +31,13 @@ TEMPLATE_BODY = \
             \"Type\" : \"AWS::IoT::Thing\",
             \"Properties\" : {
                 \"ThingName\" : {
-                    \"Ref\" : \"AWS::IoT::Certificate::Id\"
+                    \"Ref\" : \"AWS::IoT::Certificate::SerialNumber\"
                 },
                 \"AttributePayload\" : {
-                    \"version\" : \"v1\",
-                    \"country\" : {
-                        \"Ref\" : \"AWS::IoT::Certificate::Country\"
-                    }
+                    \"serial\"  : {
+                        \"Ref\" : \"AWS::IoT::Certificate::SerialNumber\"
+                    },
+                    \"version\" : \"v1\"
                 }
             }
         },
@@ -52,16 +55,41 @@ TEMPLATE_BODY = \
             \"Properties\" : {
                 \"PolicyDocument\" : \"{
                     \\\"Version\\\": \\\"2012-10-17\\\",
-                    \\\"Statement\\\": [{
-                        \\\"Effect\\\":\\\"Allow\\\",
-                        \\\"Action\\\": [
-                            \\\"iot:Connect\\\",
-                            \\\"iot:Publish\\\"
-                        ],
-                        \\\"Resource\\\" : [
-                            \\\"*\\\"
-                        ]
-                    }]
+                    \\\"Statement\\\": [
+                        {
+                            \\\"Effect\\\":\\\"Allow\\\",
+                            \\\"Action\\\": [
+                                \\\"iot:Connect\\\"
+                            ],
+                            \\\"Resource\\\" : [
+                                \\\"*\\\"
+                            ]
+                        },
+                        {
+                            \\\"Effect\\\":\\\"Allow\\\",
+                            \\\"Action\\\": [
+                                \\\"iot:Publish\\\"
+                            ],
+                            \\\"Resource\\\" : [
+                                \\\"arn:aws:iot:::topic/foo/bar\\\",
+                                \\\"arn:aws:iot:::topic/$aws/things/${iot:Connection.Thing.ThingName}/shadow/get\\\",
+                                \\\"arn:aws:iot:::topic/$aws/things/${iot:Connection.Thing.ThingName}/shadow/update\\\"
+                            ]
+                        },
+                        {
+                            \\\"Effect\\\":\\\"Allow\\\",
+                            \\\"Action\\\": [
+                                \\\"iot:Subscribe\\\"
+                            ],
+                            \\\"Resource\\\" : [
+                                \\\"arn:aws:iot:::topic/$aws/things/${iot:ClientId}/shadow/get/accepted\\\",
+                                \\\"arn:aws:iot:::topic/$aws/things/${iot:ClientId}/shadow/get/rejected\\\",
+                                \\\"arn:aws:iot:::topic/$aws/things/${iot:ClientId}/shadow/update/delta\\\",
+                                \\\"arn:aws:iot:::topic/$aws/things/${iot:ClientId}/shadow/update/accepted\\\",
+                                \\\"arn:aws:iot:::topic/$aws/things/${iot:ClientId}/shadow/update/rejected\\\"
+                            ]
+                        }
+                    ]
                 }\"
             }
         }
