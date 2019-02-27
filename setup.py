@@ -8,11 +8,11 @@ setup(
     description='AWS IoT Device Provisioner',
     packages=['jitp', 'jitp.utilities'],
     install_requires=[
-        'fire',
-        'boto3',
-        'botocore',
-        'pyopenssl',
-        'requests'
+        'fire==0.1.3',
+        'boto3==1.9.98',
+        'botocore==1.12.98',
+        'pyopenssl==19.0.0',
+        'requests==2.21.0'
     ],
     entry_points={
         'console_scripts': ['jitp=jitp.jitpCommands:main'],
