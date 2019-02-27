@@ -13,7 +13,7 @@ log.setLevel(logging.DEBUG)
 
 
 
-TEMPLATE_BODY = \
+PROVISION_TEMPLATE_BODY = \
 """{
     \"Parameters\" : {
         \"AWS::IoT::Certificate::Country\" : {
@@ -53,54 +53,156 @@ TEMPLATE_BODY = \
         \"policy\" : {
             \"Type\" : \"AWS::IoT::Policy\",
             \"Properties\" : {
-                \"PolicyDocument\" : \"{
-                    \\\"Version\\\": \\\"2012-10-17\\\",
-                    \\\"Statement\\\": [
-                        {
-                            \\\"Effect\\\":\\\"Allow\\\",
-                            \\\"Action\\\": [
-                                \\\"iot:Connect\\\"
-                            ],
-                            \\\"Resource\\\" : [
-                                \\\"*\\\"
-                            ]
-                        },
-                        {
-                            \\\"Effect\\\":\\\"Allow\\\",
-                            \\\"Action\\\": [
-                                \\\"iot:Publish\\\"
-                            ],
-                            \\\"Resource\\\" : [
-                                \\\"arn:aws:iot:::topic/foo/bar\\\",
-                                \\\"arn:aws:iot:::topic/$aws/things/${iot:Connection.Thing.ThingName}/shadow/get\\\",
-                                \\\"arn:aws:iot:::topic/$aws/things/${iot:Connection.Thing.ThingName}/shadow/update\\\"
-                            ]
-                        },
-                        {
-                            \\\"Effect\\\":\\\"Allow\\\",
-                            \\\"Action\\\": [
-                                \\\"iot:Subscribe\\\"
-                            ],
-                            \\\"Resource\\\" : [
-                                \\\"arn:aws:iot:::topic/$aws/things/${iot:ClientId}/shadow/get/accepted\\\",
-                                \\\"arn:aws:iot:::topic/$aws/things/${iot:ClientId}/shadow/get/rejected\\\",
-                                \\\"arn:aws:iot:::topic/$aws/things/${iot:ClientId}/shadow/update/delta\\\",
-                                \\\"arn:aws:iot:::topic/$aws/things/${iot:ClientId}/shadow/update/accepted\\\",
-                                \\\"arn:aws:iot:::topic/$aws/things/${iot:ClientId}/shadow/update/rejected\\\"
-                            ]
-                        }
-                    ]
-                }\"
+                \"PolicyName\": \"IoTAccess\"
             }
         }
     }
 }"""
 
 
-def createProvisionTemplate(roleArn):
-    ''' Create a Provisioning Template
+IoTAccessCF_TEMPLATE_BODY = \
+"""{
+    \"AWSTemplateFormatVersion\" : \"2010-09-09\",
+    \"Description\" : \"Setup IoTAccess policy\",
+    \"Resources\" : {
+        \"IoTAccess\" : {
+            \"Type\" : \"AWS::IoT::Policy\",
+            \"Properties" : {
+                \"PolicyName\": \"IoTAccess\",
+                \"PolicyDocument\" : {
+                    \"Version\": \"2012-10-17\",
+                    \"Statement\": [
+                        {
+                            \"Sid\":\"MQTTConnect\",
+                            \"Effect\":\"Allow\",
+                            \"Action\": [
+                                \"iot:Connect\"
+                            ],
+                            \"Resource\" : [
+                                {\"Fn::Join\":[ \"\",[
+                                    \"arn:aws:iot:\",
+                                    {\"Fn::Sub\":\"${AWS::Region}\"},
+                                    \":\",
+                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
+                                    \":client/\",
+                                    \"${iot:ClientId}\"
+                                ]]}
+                            ],
+                            \"Condition\": {
+                                \"Bool\": {
+                                    \"iot:Connection.Thing.IsAttached\": [\"true\"]
+                                }
+                            }
+                        },
+                        {
+                            \"Sid\":\"MQTTPublish\",
+                            \"Effect\":\"Allow\",
+                            \"Action\": [
+                                \"iot:Publish\",
+                                \"iot:GetThingShadow\",
+                                \"iot:UpdateThingShadow\"
+                            ],
+                            \"Resource\" : [
+                                {\"Fn::Join\":[\"\",[
+                                    \"arn:aws:iot:\",
+                                    {\"Fn::Sub\":\"${AWS::Region}\"},
+                                    \":\",
+                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
+                                    \":topic/foo/bar\"
+                                ]]},
+                                {\"Fn::Join\":[\"\",[
+                                    \"arn:aws:iot:\",
+                                    {\"Fn::Sub\":\"${AWS::Region}\"},
+                                    \":\",
+                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
+                                    \":topic/$aws/things/\",
+                                    \"${iot:ClientId}\",
+                                    \"/shadow/get\"
+                                ]]},
+                                {\"Fn::Join\":[\"\",[
+                                    \"arn:aws:iot:\",
+                                    {\"Fn::Sub\":\"${AWS::Region}\"},
+                                    \":\",
+                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
+                                    \":topic/$aws/things/\",
+                                    \"${iot:ClientId}\",
+                                    \"/shadow/update\"
+                                ]]}
+                            ]
+                        },
+                        {
+                            \"Sid\":\"MQTTSubscribe\",
+                            \"Effect\":\"Allow\",
+                            \"Action\": [
+                                \"iot:Subscribe\",
+                                \"iot:Receive\"
+                            ],
+                            \"Resource\" : [
+                                {\"Fn::Join\":[\"\",[
+                                    \"arn:aws:iot:\",
+                                    {\"Fn::Sub\":\"${AWS::Region}\"},
+                                    \":\",
+                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
+                                    \":topic/$aws/things/\",
+                                    \"${iot:ClientId}\",
+                                    \"/shadow/get/accepted\"
+                                ]]},
+                                {\"Fn::Join\":[\"\",[
+                                    \"arn:aws:iot:\",
+                                    {\"Fn::Sub\":\"${AWS::Region}\"},
+                                    \":\",
+                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
+                                    \":topic/$aws/things/\",
+                                    \"${iot:ClientId}\",
+                                    \"/shadow/rejected\"
+                                ]]},
+                                {\"Fn::Join\":[\"\",[
+                                    \"arn:aws:iot:\",
+                                    {\"Fn::Sub\":\"${AWS::Region}\"},
+                                    \":\",
+                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
+                                    \":topic/$aws/things/\",
+                                    \"${iot:ClientId}\",
+                                    \"/shadow/update/delta\"
+                                ]]},
+                                {\"Fn::Join\":[\"\",[
+                                    \"arn:aws:iot:\",
+                                    {\"Fn::Sub\":\"${AWS::Region}\"},
+                                    \":\",
+                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
+                                    \":topic/$aws/things/\",
+                                    \"${iot:ClientId}\",
+                                    \"/shadow/update/accepted\"
+                                ]]},
+                                {\"Fn::Join\":[\"\",[
+                                    \"arn:aws:iot:\",
+                                    {\"Fn::Sub\":\"${AWS::Region}\"},
+                                    \":\",
+                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
+                                    \":topic/$aws/things/\",
+                                    \"${iot:ClientId}\",
+                                    \"/shadow/update/rejected\"
+                                ]]}
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}"""
+
+
+def createProvisionTemplate(roleArn, template):
+    ''' Create a Provisioning Template.
     '''
-    template = {}
-    template["roleArn"] = roleArn
-    template["templateBody"] = TEMPLATE_BODY.replace('\n', '').replace(' ', '')
-    return template
+    temp = {}
+    temp["roleArn"] = roleArn
+    temp["templateBody"] = template.replace('\n', '').replace(' ', '')
+    return temp
+
+
+def createCloudformationTemplate(template):
+    ''' Create a Cloudformation Template.
+    '''
+    return str(template.replace('\n', '').replace(' ', ''))

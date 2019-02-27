@@ -13,7 +13,9 @@ from OpenSSL import crypto, SSL
 from utilities.certgen import (createKeyPair, createCertRequest,
     createSelfSignedCertificate, createSignedCertificate,
     createCertFile, loadCertFile)
-from utilities.tempgen import (createProvisionTemplate)
+from utilities.tempgen import (createProvisionTemplate, createCloudformationTemplate,
+   PROVISION_TEMPLATE_BODY, IoTAccessCF_TEMPLATE_BODY
+)
 from utilities.uuidgen import (createEWonSerial)
 
 
@@ -298,8 +300,63 @@ class jitpCommands(object):
         return artifacts if artifacts else None
 
 
-    def create_device_role(self, roleName='IoTAccess'):
-        
+    def create_IoTAccess_policy(self, policyName='IoTAccess'):
+        ''' Create a IoTAccess IoT policy
+        '''
+        stackName    = '{}-Policy-Stack'.format(policyName)
+        templateBody = createCloudformationTemplate(IoTAccessCF_TEMPLATE_BODY)
+        try:
+            self._cloudformation.create_stack(
+                StackName=stackName,
+                TemplateBody=templateBody,
+                OnFailure='DELETE',
+                EnableTerminationProtection=False
+            )
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'AlreadyExistsException':
+                log.error((
+                    'AWS Cloudformation Stack: {}, ' +
+                    'already exists.'
+                ).format(stackName))
+            else:
+                log.error((
+                    'AWS Cloudformation Stack: {}, ' +
+                    'create encountered unexcepted error.'
+                ).format(stackName), exc_info=True)
+            return
+        else:
+            log.info((
+                'AWS Cloudformation Stack: {}, ' +
+                'created successfully.'
+            ).format(stackName))
+
+
+    def delete_IoTAccess_policy(self, policyName='IoTAccess'):
+        ''' Delete an IoTAccess IoT policy
+        '''
+        stackName    = '{}-Policy-Stack'.format(policyName)
+        try:
+            self._cloudformation.delete_stack(
+                StackName=stackName
+            )
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchEntity':
+                log.error((
+                    'AWS Cloudformation Stack: {}, ' +
+                    'does not exist.'
+                ).format(stackName))
+            else:
+                log.error((
+                    'AWS Cloudformation Stack: {}, ' +
+                    'delete encountered unexcepted error.'
+                ).format(stackName), exc_info=True)
+            return
+        else:
+            log.info((
+                'AWS Cloudformation Stack: {}, ' +
+                'deleted successfully.'
+            ).format(stackName))
+
 
 
     def generate_rootCA_cert(self, certName='rootCA'):
@@ -361,7 +418,7 @@ class jitpCommands(object):
                 )).decode('utf-8'),
                 setAsActive=True,
                 allowAutoRegistration=True,
-                registrationConfig=createProvisionTemplate(roleArn)
+                registrationConfig=createProvisionTemplate(roleArn, PROVISION_TEMPLATE_BODY)
             )
 
             self._iot.register_certificate(
