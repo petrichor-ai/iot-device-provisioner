@@ -39,6 +39,8 @@ class jitpCommands(object):
             raise Exception("AWS Credentials and Region must be setup")
 
         self._region         = s.region_name
+        self._sts            = s.client('sts')
+        self._account_id     = self._sts.get_caller_identity().get('Account')
         self._iam            = s.client('iam')
         self._iot            = s.client('iot')
         self._iot_endpoint   = self._iot.describe_endpoint()['endpointAddress']
@@ -418,7 +420,9 @@ class jitpCommands(object):
                 )).decode('utf-8'),
                 setAsActive=True,
                 allowAutoRegistration=True,
-                registrationConfig=createProvisionTemplate(roleArn, PROVISION_TEMPLATE_BODY)
+                registrationConfig=createProvisionTemplate(
+                    self._account_id, self._region, roleArn
+                )
             )
 
             self._iot.register_certificate(

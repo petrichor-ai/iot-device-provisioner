@@ -14,50 +14,100 @@ log.setLevel(logging.DEBUG)
 
 
 PROVISION_TEMPLATE_BODY = \
-"""{
-    \"Parameters\" : {
-        \"AWS::IoT::Certificate::Country\" : {
+"""{{
+    \"Parameters\" : {{
+        \"AWS::IoT::Certificate::Country\" : {{
             \"Type\" : \"String\"
-        },
-        \"AWS::IoT::Certificate::Id\" : {
+        }},
+        \"AWS::IoT::Certificate::Id\" : {{
             \"Type\" : \"String\"
-        },
-        \"AWS::IoT::Certificate::SerialNumber\" : {
+        }},
+        \"AWS::IoT::Certificate::SerialNumber\" : {{
             \"Type\" : \"String\"
-        }
-    },
-    \"Resources\" : {
-        \"thing\" : {
+        }}
+    }},
+    \"Resources\" : {{
+        \"thing\" : {{
             \"Type\" : \"AWS::IoT::Thing\",
-            \"Properties\" : {
-                \"ThingName\" : {
+            \"Properties\" : {{
+                \"ThingName\" : {{
                     \"Ref\" : \"AWS::IoT::Certificate::SerialNumber\"
-                },
-                \"AttributePayload\" : {
-                    \"serial\"  : {
+                }},
+                \"AttributePayload\" : {{
+                    \"serial\"  : {{
                         \"Ref\" : \"AWS::IoT::Certificate::SerialNumber\"
-                    },
+                    }},
                     \"version\" : \"v1\"
-                }
-            }
-        },
-        \"certificate\" : {
+                }}
+            }}
+        }},
+        \"certificate\" : {{
             \"Type\" : \"AWS::IoT::Certificate\",
-            \"Properties\" : {
-                \"CertificateId\": {
+            \"Properties\" : {{
+                \"CertificateId\": {{
                     \"Ref\" : \"AWS::IoT::Certificate::Id\"
-                },
+                }},
                 \"Status\" : \"ACTIVE\"
-            }
-        },
-        \"policy\" : {
+            }}
+        }},
+        \"policy\" : {{
             \"Type\" : \"AWS::IoT::Policy\",
-            \"Properties\" : {
+            \"Properties\" : {{
                 \"PolicyName\": \"IoTAccess\"
-            }
-        }
-    }
-}"""
+                \"PolicyDocument\" : \"{{
+                    \\\"Version\\\":\\\"2012-10-17\\\",
+                    \\\"Statement\\\": [
+                        {{
+                            \\\"Sid\\\":\\\"MQTTConnect\\\",
+                            \\\"Effect\\\":\\\"Allow\\\",
+                            \\\"Action\\\": [
+                                \\\"iot:Connect\\\"
+                            ],
+                            \\\"Resource\\\" : [
+                                \\\"arn:aws:iot:{accountId}:{region}:client/${{iot:ClientId}}\\\"
+                            ],
+                            \\\"Condition\\\": {{
+                                \\\"Bool\\\": {{
+                                    \\\"iot:Connection.Thing.IsAttached\\\": [\\\"true\\\"]
+                                }}
+                            }}
+                        }},
+                        {{
+                            \\\"Sid\\\":\\\"MQTTPublish\\\",
+                            \\\"Effect\\\":\\\"Allow\\\",
+                            \\\"Action\\\": [
+                                \\\"iot:Publish\\\",
+                                \\\"iot:GetThingShadow\\\",
+                                \\\"iot:UpdateThingShadow\\\"
+                            ],
+                            \\\"Resource\\\" : [
+                                \\\"arn:aws:iot:{accountId}:{region}:topic/foo/bar\\\",
+                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/get\\\",
+                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/update\\\",
+                            ]
+                        }},
+                        {{
+                            \\\"Sid\\\":\\\"MQTTSubscribe\\\",
+                            \\\"Effect\\\":\\\"Allow\\\",
+                            \\\"Action\\\": [
+                                \\\"iot:Subscribe\\\",
+                                \\\"iot:Receive\\\",
+                                \\\"iot:GetThingShadow\\\"
+                            ],
+                            \\\"Resource\\\" : [
+                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/get/accepted\\\",
+                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/get/rejected\\\",
+                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/update/accepted\\\",
+                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/update/rejected\\\",
+                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/update/delta\\\"
+                            ]
+                        }}
+                    ]
+                }}\"
+            }}
+        }}
+    }}
+}}"""
 
 
 IoTAccessCF_TEMPLATE_BODY = \
@@ -135,7 +185,8 @@ IoTAccessCF_TEMPLATE_BODY = \
                             \"Effect\":\"Allow\",
                             \"Action\": [
                                 \"iot:Subscribe\",
-                                \"iot:Receive\"
+                                \"iot:Receive\",
+                                \"iot:GetThingShadow\"
                             ],
                             \"Resource\" : [
                                 {\"Fn::Join\":[\"\",[
@@ -154,7 +205,7 @@ IoTAccessCF_TEMPLATE_BODY = \
                                     {\"Fn::Sub\":\"${AWS::AccountId}\"},
                                     \":topic/$aws/things/\",
                                     \"${iot:ClientId}\",
-                                    \"/shadow/rejected\"
+                                    \"/shadow/get/rejected\"
                                 ]]},
                                 {\"Fn::Join\":[\"\",[
                                     \"arn:aws:iot:\",
@@ -193,13 +244,18 @@ IoTAccessCF_TEMPLATE_BODY = \
 }"""
 
 
-def createProvisionTemplate(roleArn, template):
+def createProvisionTemplate(accountId, region, roleArn):
     ''' Create a Provisioning Template.
     '''
-    temp = {}
-    temp["roleArn"] = roleArn
-    temp["templateBody"] = template.replace('\n', '').replace(' ', '')
-    return temp
+
+    template = PROVISION_TEMPLATE_BODY.format(
+        accountId=accountId, region=region
+    ).replace('\n', '').replace(' ', '')
+
+    tempPayload = {}
+    tempPayload["roleArn"] = roleArn
+    tempPayload["templateBody"] = template
+    return tempPayload
 
 
 def createCloudformationTemplate(template):
