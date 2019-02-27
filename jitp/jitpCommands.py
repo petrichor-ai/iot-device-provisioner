@@ -163,7 +163,6 @@ class jitpCommands(object):
             :params  roleName: Name of the IAM Service Role
             :type    roleName: string
         '''
-
         # Detach AWS IAM Service Role Policy (AWSIoTLogging)
         try:
             self._iam.detach_role_policy(
@@ -270,7 +269,6 @@ class jitpCommands(object):
             :return: artifacts
             :rtype:  dict
         '''
-
         # Fetch AWS IAM Service Role (JITP)
         artifacts = {}
         try:
@@ -300,69 +298,9 @@ class jitpCommands(object):
         return artifacts if artifacts else None
 
 
-    def create_IoTAccess_policy(self, policyName='IoTAccess'):
-        ''' Create a IoTAccess IoT policy
-        '''
-        stackName    = '{}-Policy-Stack'.format(policyName)
-        templateBody = createCloudformationTemplate(IoTAccessCF_TEMPLATE_BODY)
-        try:
-            self._cloudformation.create_stack(
-                StackName=stackName,
-                TemplateBody=templateBody,
-                OnFailure='DELETE',
-                EnableTerminationProtection=False
-            )
-        except ClientError as e:
-            if e.response['Error']['Code'] == 'AlreadyExistsException':
-                log.error((
-                    'AWS Cloudformation Stack: {}, ' +
-                    'already exists.'
-                ).format(stackName))
-            else:
-                log.error((
-                    'AWS Cloudformation Stack: {}, ' +
-                    'create encountered unexcepted error.'
-                ).format(stackName), exc_info=True)
-            return
-        else:
-            log.info((
-                'AWS Cloudformation Stack: {}, ' +
-                'created successfully.'
-            ).format(stackName))
-
-
-    def delete_IoTAccess_policy(self, policyName='IoTAccess'):
-        ''' Delete an IoTAccess IoT policy
-        '''
-        stackName    = '{}-Policy-Stack'.format(policyName)
-        try:
-            self._cloudformation.delete_stack(
-                StackName=stackName
-            )
-        except ClientError as e:
-            if e.response['Error']['Code'] == 'NoSuchEntity':
-                log.error((
-                    'AWS Cloudformation Stack: {}, ' +
-                    'does not exist.'
-                ).format(stackName))
-            else:
-                log.error((
-                    'AWS Cloudformation Stack: {}, ' +
-                    'delete encountered unexcepted error.'
-                ).format(stackName), exc_info=True)
-            return
-        else:
-            log.info((
-                'AWS Cloudformation Stack: {}, ' +
-                'deleted successfully.'
-            ).format(stackName))
-
-
-
     def generate_rootCA_cert(self, certName='rootCA'):
         ''' Generate a rootCA Certificate.
         '''
-
         pemFileOut = '{}.pem'.format(certName)
         keyFileOut = '{}.key'.format(certName)
 
@@ -469,7 +407,8 @@ class jitpCommands(object):
 
 
     def fetch_iot_root_cert(self, certName='root'):
-
+        ''' Download AWS IoT Symantec root CA.
+        '''
         pemFileOut = '{}.cert'.format(certName)
 
         # Fetch Symantec rootCA
