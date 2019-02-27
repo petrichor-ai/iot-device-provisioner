@@ -13,9 +13,7 @@ from OpenSSL import crypto, SSL
 from utilities.certgen import (createKeyPair, createCertRequest,
     createSelfSignedCertificate, createSignedCertificate,
     createCertFile, loadCertFile)
-from utilities.tempgen import (createProvisionTemplate, createCloudformationTemplate,
-   PROVISION_TEMPLATE_BODY, IoTAccessCF_TEMPLATE_BODY
-)
+from utilities.tempgen import (createProvisionTemplate)
 from utilities.uuidgen import (createEWonSerial)
 
 
@@ -40,7 +38,7 @@ class jitpCommands(object):
 
         self._region         = s.region_name
         self._sts            = s.client('sts')
-        self._account_id     = self._sts.get_caller_identity().get('Account')
+        self._accountId      = self._sts.get_caller_identity().get('Account')
         self._iam            = s.client('iam')
         self._iot            = s.client('iot')
         self._iot_endpoint   = self._iot.describe_endpoint()['endpointAddress']
@@ -421,7 +419,7 @@ class jitpCommands(object):
                 setAsActive=True,
                 allowAutoRegistration=True,
                 registrationConfig=createProvisionTemplate(
-                    self._account_id, self._region, roleArn
+                    self._accountId, self._region, roleArn
                 )
             )
 

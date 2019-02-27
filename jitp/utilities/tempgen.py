@@ -16,9 +16,6 @@ log.setLevel(logging.DEBUG)
 PROVISION_TEMPLATE_BODY = \
 """{{
     \"Parameters\" : {{
-        \"AWS::IoT::Certificate::Country\" : {{
-            \"Type\" : \"String\"
-        }},
         \"AWS::IoT::Certificate::Id\" : {{
             \"Type\" : \"String\"
         }},
@@ -53,7 +50,6 @@ PROVISION_TEMPLATE_BODY = \
         \"policy\" : {{
             \"Type\" : \"AWS::IoT::Policy\",
             \"Properties\" : {{
-                \"PolicyName\": \"IoTAccess\"
                 \"PolicyDocument\" : \"{{
                     \\\"Version\\\":\\\"2012-10-17\\\",
                     \\\"Statement\\\": [
@@ -64,7 +60,7 @@ PROVISION_TEMPLATE_BODY = \
                                 \\\"iot:Connect\\\"
                             ],
                             \\\"Resource\\\" : [
-                                \\\"arn:aws:iot:{accountId}:{region}:client/${{iot:ClientId}}\\\"
+                                \\\"arn:aws:iot:{region}:{accountId}:client/${{iot:ClientId}}\\\"
                             ],
                             \\\"Condition\\\": {{
                                 \\\"Bool\\\": {{
@@ -81,9 +77,9 @@ PROVISION_TEMPLATE_BODY = \
                                 \\\"iot:UpdateThingShadow\\\"
                             ],
                             \\\"Resource\\\" : [
-                                \\\"arn:aws:iot:{accountId}:{region}:topic/foo/bar\\\",
-                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/get\\\",
-                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/update\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/foo/bar\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update\\\"
                             ]
                         }},
                         {{
@@ -91,15 +87,14 @@ PROVISION_TEMPLATE_BODY = \
                             \\\"Effect\\\":\\\"Allow\\\",
                             \\\"Action\\\": [
                                 \\\"iot:Subscribe\\\",
-                                \\\"iot:Receive\\\",
-                                \\\"iot:GetThingShadow\\\"
+                                \\\"iot:Receive\\\"
                             ],
                             \\\"Resource\\\" : [
-                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/get/accepted\\\",
-                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/get/rejected\\\",
-                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/update/accepted\\\",
-                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/update/rejected\\\",
-                                \\\"arn:aws:iot:{accountId}:{region}:topic/$aws/things/${{iot:ClientId}}/shadow/update/delta\\\"
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get/accepted\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get/rejected\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/accepted\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/rejected\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/delta\\\"
                             ]
                         }}
                     ]
@@ -108,140 +103,6 @@ PROVISION_TEMPLATE_BODY = \
         }}
     }}
 }}"""
-
-
-IoTAccessCF_TEMPLATE_BODY = \
-"""{
-    \"AWSTemplateFormatVersion\" : \"2010-09-09\",
-    \"Description\" : \"Setup IoTAccess policy\",
-    \"Resources\" : {
-        \"IoTAccess\" : {
-            \"Type\" : \"AWS::IoT::Policy\",
-            \"Properties" : {
-                \"PolicyName\": \"IoTAccess\",
-                \"PolicyDocument\" : {
-                    \"Version\": \"2012-10-17\",
-                    \"Statement\": [
-                        {
-                            \"Sid\":\"MQTTConnect\",
-                            \"Effect\":\"Allow\",
-                            \"Action\": [
-                                \"iot:Connect\"
-                            ],
-                            \"Resource\" : [
-                                {\"Fn::Join\":[ \"\",[
-                                    \"arn:aws:iot:\",
-                                    {\"Fn::Sub\":\"${AWS::Region}\"},
-                                    \":\",
-                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
-                                    \":client/\",
-                                    \"${iot:ClientId}\"
-                                ]]}
-                            ],
-                            \"Condition\": {
-                                \"Bool\": {
-                                    \"iot:Connection.Thing.IsAttached\": [\"true\"]
-                                }
-                            }
-                        },
-                        {
-                            \"Sid\":\"MQTTPublish\",
-                            \"Effect\":\"Allow\",
-                            \"Action\": [
-                                \"iot:Publish\",
-                                \"iot:GetThingShadow\",
-                                \"iot:UpdateThingShadow\"
-                            ],
-                            \"Resource\" : [
-                                {\"Fn::Join\":[\"\",[
-                                    \"arn:aws:iot:\",
-                                    {\"Fn::Sub\":\"${AWS::Region}\"},
-                                    \":\",
-                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
-                                    \":topic/foo/bar\"
-                                ]]},
-                                {\"Fn::Join\":[\"\",[
-                                    \"arn:aws:iot:\",
-                                    {\"Fn::Sub\":\"${AWS::Region}\"},
-                                    \":\",
-                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
-                                    \":topic/$aws/things/\",
-                                    \"${iot:ClientId}\",
-                                    \"/shadow/get\"
-                                ]]},
-                                {\"Fn::Join\":[\"\",[
-                                    \"arn:aws:iot:\",
-                                    {\"Fn::Sub\":\"${AWS::Region}\"},
-                                    \":\",
-                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
-                                    \":topic/$aws/things/\",
-                                    \"${iot:ClientId}\",
-                                    \"/shadow/update\"
-                                ]]}
-                            ]
-                        },
-                        {
-                            \"Sid\":\"MQTTSubscribe\",
-                            \"Effect\":\"Allow\",
-                            \"Action\": [
-                                \"iot:Subscribe\",
-                                \"iot:Receive\",
-                                \"iot:GetThingShadow\"
-                            ],
-                            \"Resource\" : [
-                                {\"Fn::Join\":[\"\",[
-                                    \"arn:aws:iot:\",
-                                    {\"Fn::Sub\":\"${AWS::Region}\"},
-                                    \":\",
-                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
-                                    \":topic/$aws/things/\",
-                                    \"${iot:ClientId}\",
-                                    \"/shadow/get/accepted\"
-                                ]]},
-                                {\"Fn::Join\":[\"\",[
-                                    \"arn:aws:iot:\",
-                                    {\"Fn::Sub\":\"${AWS::Region}\"},
-                                    \":\",
-                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
-                                    \":topic/$aws/things/\",
-                                    \"${iot:ClientId}\",
-                                    \"/shadow/get/rejected\"
-                                ]]},
-                                {\"Fn::Join\":[\"\",[
-                                    \"arn:aws:iot:\",
-                                    {\"Fn::Sub\":\"${AWS::Region}\"},
-                                    \":\",
-                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
-                                    \":topic/$aws/things/\",
-                                    \"${iot:ClientId}\",
-                                    \"/shadow/update/delta\"
-                                ]]},
-                                {\"Fn::Join\":[\"\",[
-                                    \"arn:aws:iot:\",
-                                    {\"Fn::Sub\":\"${AWS::Region}\"},
-                                    \":\",
-                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
-                                    \":topic/$aws/things/\",
-                                    \"${iot:ClientId}\",
-                                    \"/shadow/update/accepted\"
-                                ]]},
-                                {\"Fn::Join\":[\"\",[
-                                    \"arn:aws:iot:\",
-                                    {\"Fn::Sub\":\"${AWS::Region}\"},
-                                    \":\",
-                                    {\"Fn::Sub\":\"${AWS::AccountId}\"},
-                                    \":topic/$aws/things/\",
-                                    \"${iot:ClientId}\",
-                                    \"/shadow/update/rejected\"
-                                ]]}
-                            ]
-                        }
-                    ]
-                }
-            }
-        }
-    }
-}"""
 
 
 def createProvisionTemplate(accountId, region, roleArn):
@@ -256,9 +117,3 @@ def createProvisionTemplate(accountId, region, roleArn):
     tempPayload["roleArn"] = roleArn
     tempPayload["templateBody"] = template
     return tempPayload
-
-
-def createCloudformationTemplate(template):
-    ''' Create a Cloudformation Template.
-    '''
-    return str(template.replace('\n', '').replace(' ', ''))
