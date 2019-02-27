@@ -361,6 +361,11 @@ class jitpCommands(object):
                 )
             )
 
+            log.info((
+                'AWS IoT CA Certificate: {}, ' +
+                'registered successfully'
+            ).format(CA))
+
             self._iot.register_certificate(
                 certificatePem=str(crypto.dump_certificate(
                     crypto.FILETYPE_PEM, verifyPem
@@ -370,11 +375,20 @@ class jitpCommands(object):
                 )).decode('utf-8'),
                 setAsActive=True
             )
+
+            log.info((
+                'AWS IoT Verify Certificate: {}, ' +
+                'registered successfully'
+            ).format(certName))
         except ClientError as e:
-            print(e)
             if e.response['Error']['Code'] == 'ResourceAlreadyExistsException':
                 log.error(e.response['Error']['Message'])
                 log.info('Regenerate rootCA and retry...')
+            else:
+                log.error((
+                    'AWS IoT CA and Verify Certificate: {} {}, ' +
+                    'registration encountered unexpected error'
+                ).format(CA, certName), exc_info=True)
 
 
     def generate_device_cert(self, certName='deviceCert', productCode=1,
@@ -412,7 +426,11 @@ class jitpCommands(object):
         pemFileOut = '{}.cert'.format(certName)
 
         # Fetch Symantec rootCA
-        resp = requests.get('https://www.symantec.com/content/en/us/enterprise/verisign/roots/VeriSign-Class%203-Public-Primary-Certification-Authority-G5.pem')
+        resp = requests.get((
+            'https://www.symantec.com' +
+            '/content/en/us/enterprise/verisign/roots' +
+            '/VeriSign-Class%203-Public-Primary-Certification-Authority-G5.pem'
+        ))
 
         # Create Symantec rootCA local file
         createCertFile(pemFileOut, resp.text)
