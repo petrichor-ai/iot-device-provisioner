@@ -41,5 +41,5 @@ $ python pub_client.py -e <AWS-IoT-Endpoint> -p 8883 -r root.cert -c deviceCertA
 ```
 
 ```bash
-$ python pub_client.py -e <AWS-IoT-Endpoint> -p 8883 -r root.cert -c deviceCertAndCACert.pem -k deviceCert.key -n <thingName> -id <clientId>
+$ python sub_client.py -e <AWS-IoT-Endpoint> -p 8883 -r root.cert -c deviceCertAndCACert.pem -k deviceCert.key -n <thingName> -id <clientId>
 ```
