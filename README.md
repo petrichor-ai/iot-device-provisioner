@@ -37,9 +37,9 @@ $ cat deviceCert.pem rootCA.pem > deviceCertAndCACert.pem
 Tests:
 
 ```bash
-$ python pub_client.py -e <AWS-IoT-Endpoint> -p 8882 -r root.cert -c deviceCertAndCACert.pem -k deviceCert.key -n <thingName> -id <clientId>
+$ python pub_client.py -e <AWS-IoT-Endpoint> -p 8883 -r root.cert -c deviceCertAndCACert.pem -k deviceCert.key -n <thingName> -id <clientId>
 ```
 
 ```bash
-$ python pub_client.py -e <AWS-IoT-Endpoint> -p 8882 -r root.cert -c deviceCertAndCACert.pem -k deviceCert.key -n <thingName> -id <clientId>
+$ python pub_client.py -e <AWS-IoT-Endpoint> -p 8883 -r root.cert -c deviceCertAndCACert.pem -k deviceCert.key -n <thingName> -id <clientId>
 ```
