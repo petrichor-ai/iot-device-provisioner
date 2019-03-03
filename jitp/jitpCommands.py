@@ -298,7 +298,8 @@ class jitpCommands(object):
         return artifacts if artifacts else None
 
 
-    def generate_rootCA_cert(self, certName='rootCA'):
+    def generate_rootCA_cert(self, certName='rootCA',
+        C='', ST='', L='', O='', OU='', CN='rootCA'):
         ''' Generate a rootCA Certificate.
         '''
         pemFileOut = '{}.pem'.format(certName)
@@ -309,7 +310,10 @@ class jitpCommands(object):
 
         # Create rootCA Certificate
         serialNumber = random.randint(1000000, 9000000)
-        caPem = createSelfSignedCertificate(caKey, serialNumber, (0, 60*60*24*365*5))
+        caPem = createSelfSignedCertificate(
+            caKey, serialNumber, (0, 60*60*24*365*5),
+            C=C, ST=ST, L=L, O=O, OU=OU, CN=CN
+        )
 
         # Create rootCA Pem/Key local files
         createCertFile(pemFileOut, caPem)
@@ -318,8 +322,8 @@ class jitpCommands(object):
         return caKey, caPem
 
 
-    def generate_verify_cert(self, certName='verifyCert', CA='rootCA',
-        CAPath='./', C='US', ST='CA', L='LA'):
+    def generate_verify_cert(self, certName='verifyCert', CA='rootCA', CAPath='./',
+        C='', ST='', L='', O='', OU=''):
         ''' Generate a Verification Certificate.
         '''
         pemFileOut = '{}.pem'.format(certName)
@@ -336,7 +340,7 @@ class jitpCommands(object):
         verifyKey  = createKeyPair(crypto.TYPE_RSA, 2048)
 
         # Create verifyCert Signing Request
-        verifyReq = createCertRequest(verifyKey, C=C, ST=ST, L=L, CN=regCode)
+        verifyReq = createCertRequest(verifyKey, C=C, ST=ST, L=L, O=O, OU=OU, CN=regCode)
 
         # Create verifyCert Certificate
         serialNumber = random.randint(1000000, 9000000)
@@ -398,7 +402,7 @@ class jitpCommands(object):
 
     def generate_device_cert(self, certName='deviceCert', thingName='thing1',
             productCode=1, productNumber=1, CA='rootCA', CAPath='./',
-            C='US', ST='CA', L='LA'):
+            C='', ST='', L='', O='', OU=''):
         ''' Generate a Device Certificate.
         '''
         pemFileOut = '{}.pem'.format(certName)
@@ -412,7 +416,7 @@ class jitpCommands(object):
         deviceKey  = createKeyPair(crypto.TYPE_RSA, 2048)
 
         # Create deviceCert Signing Request
-        deviceReq = createCertRequest(deviceKey, C=C, ST=ST, L=L, CN=thingName)
+        deviceReq = createCertRequest(deviceKey, C=C, ST=ST, L=L, O=O, OU=OU, CN=thingName)
 
         # Create deviceCert Certificate
         serialNumber = createEWonSerial(productCode, productNumber)

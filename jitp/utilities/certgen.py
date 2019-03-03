@@ -29,8 +29,8 @@ def createCertRequest(pKey, digest='sha256', **subjects):
     req = crypto.X509Req()
     subj = req.get_subject()
 
-    for key, value in subjects.items():
-        setattr(subj, key, value)
+    for k, v in subjects.items():
+        setattr(subj, k, v) if v else None
 
     req.set_pubkey(pKey)
     req.sign(pKey, digest)
@@ -43,12 +43,10 @@ def createSelfSignedCertificate(key, serial, validityPeriod, digest='sha256', **
     notBefore, notAfter = validityPeriod
 
     cert = crypto.X509()
-    cert.get_subject().C  = subjects.get('C', 'US')
-    cert.get_subject().ST = subjects.get('ST', 'CA')
-    cert.get_subject().L  = subjects.get('L', 'LA')
-    cert.get_subject().O  = subjects.get('O', 'Petrichor AI')
-    cert.get_subject().OU = subjects.get('OU', 'rootCA')
-    cert.get_subject().CN = subjects.get('CN', 'rootCA')
+    subj = cert.get_subject()
+
+    for k, v in subjects.items():
+        setattr(subj, k, v) if v else None
 
     cert.set_version(2)
     cert.set_serial_number(serial)
