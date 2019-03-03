@@ -32,8 +32,6 @@ $ jitp fetch-service-role \
     --roleName (default 'IoT_JITP_Role')
 ```
 
-Avial
-
 ```bash
 $ jitp generate-rootCA-cert \
     --certName (default 'rootCA')
