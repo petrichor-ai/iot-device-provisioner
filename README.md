@@ -15,18 +15,61 @@ $ pip install git+https://github.com/petrichor-ai/iot-device-provisioner.git
 ```
 
 
-Steps:
+Commands:
 
 ```bash
-$ jitp generate-rootCA-cert
+$ jitp create-service-role \
+    --roleName (default 'IoT_JITP_Role')
 ```
 
 ```bash
-$ jitp generate-verify-cert
+$ jitp delete-service-role \
+    --roleName (default 'IoT_JITP_Role')
 ```
 
 ```bash
-$ jitp generate-device-cert
+$ jitp fetch-service-role \
+    --roleName (default 'IoT_JITP_Role')
+```
+
+Avial
+
+```bash
+$ jitp generate-rootCA-cert \
+    --certName (default 'rootCA')
+    --C (Optional)
+    --ST (Optional)
+    --L (Optional)
+    --O (Optional)
+    --OU (Optional)
+    --CN (default 'rootCA')
+```
+
+```bash
+$ jitp generate-verify-cert \
+    --certName (default 'verifyCert')
+    --CA (default 'rootCA')
+    --CAPath (default './')
+    --C (Optional)
+    --ST (Optional)
+    --L (Optional)
+    --O (Optional)
+    --OU (Optional)
+```
+
+```bash
+$ jitp generate-device-cert \
+    --certName (default 'deviceCert')
+    --thingName (default 'thing1')
+    --productCode (default 1)
+    --productNumber (default 1)
+    --CA (default 'rootCA')
+    --CAPath (default './')
+    --C (Optional)
+    --ST (Optional)
+    --L (Optional)
+    --O (Optional)
+    --OU (Optional)
 ```
 
 ```bash
