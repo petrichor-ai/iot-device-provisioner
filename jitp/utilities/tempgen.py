@@ -21,6 +21,9 @@ PROVISION_TEMPLATE_BODY = \
         }},
         \"AWS::IoT::Certificate::SerialNumber\" : {{
             \"Type\" : \"String\"
+        }},
+        \"AWS::IoT::Certificate::CommonName\" : {{
+            \"Type\" : \"String\"
         }}
     }},
     \"Resources\" : {{
@@ -28,7 +31,7 @@ PROVISION_TEMPLATE_BODY = \
             \"Type\" : \"AWS::IoT::Thing\",
             \"Properties\" : {{
                 \"ThingName\" : {{
-                    \"Ref\" : \"AWS::IoT::Certificate::SerialNumber\"
+                    \"Ref\" : \"AWS::IoT::Certificate::CommonName\"
                 }},
                 \"AttributePayload\" : {{
                     \"serial\"  : {{

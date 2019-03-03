@@ -315,8 +315,11 @@ class jitpCommands(object):
         createCertFile(pemFileOut, caPem)
         createCertFile(keyFileOut, caKey)
 
+        return caKey, caPem
 
-    def generate_verify_cert(self, certName='verifyCert', CA='rootCA', CAPath='./'):
+
+    def generate_verify_cert(self, certName='verifyCert', CA='rootCA',
+        CAPath='./', C='US', ST='CA', L='LA'):
         ''' Generate a Verification Certificate.
         '''
         pemFileOut = '{}.pem'.format(certName)
@@ -333,7 +336,7 @@ class jitpCommands(object):
         verifyKey  = createKeyPair(crypto.TYPE_RSA, 2048)
 
         # Create verifyCert Signing Request
-        verifyReq = createCertRequest(verifyKey, C='US', ST='CA', L='LA', CN=regCode)
+        verifyReq = createCertRequest(verifyKey, C=C, ST=ST, L=L, CN=regCode)
 
         # Create verifyCert Certificate
         serialNumber = random.randint(1000000, 9000000)
@@ -390,9 +393,12 @@ class jitpCommands(object):
                     'registration encountered unexpected error'
                 ).format(CA, certName), exc_info=True)
 
+        return verifyKey, verifyReq, verifyPem
 
-    def generate_device_cert(self, certName='deviceCert', productCode=1,
-            productNumber=1, CA='rootCA', CAPath='./'):
+
+    def generate_device_cert(self, certName='deviceCert', thingName='thing1',
+            productCode=1, productNumber=1, CA='rootCA', CAPath='./',
+            C='US', ST='CA', L='LA'):
         ''' Generate a Device Certificate.
         '''
         pemFileOut = '{}.pem'.format(certName)
@@ -402,14 +408,11 @@ class jitpCommands(object):
         caKey = loadCertFile('{}.key'.format(CA), CAPath)
 
 
-        # Retreive AWS IoT Cert Registration Code
-        regCode = self._iot.get_registration_code()['registrationCode']
-
         # Create deviceCert KeyPair
         deviceKey  = createKeyPair(crypto.TYPE_RSA, 2048)
 
         # Create deviceCert Signing Request
-        deviceReq = createCertRequest(deviceKey, C='US', ST='CA', L='LA', CN=regCode)
+        deviceReq = createCertRequest(deviceKey, C=C, ST=ST, L=L, CN=thingName)
 
         # Create deviceCert Certificate
         serialNumber = createEWonSerial(productCode, productNumber)
@@ -418,6 +421,8 @@ class jitpCommands(object):
         # Create deviceCert Pem/Key local files
         createCertFile(pemFileOut, devicePem)
         createCertFile(keyFileOut, deviceKey)
+
+        return deviceKey, deviceReq, devicePem
 
 
     def fetch_iot_root_cert(self, certName='root'):
