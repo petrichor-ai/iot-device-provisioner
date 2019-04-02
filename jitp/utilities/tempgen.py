@@ -77,10 +77,11 @@ PROVISION_TEMPLATE_BODY = \
                             \\\"Action\\\": [
                                 \\\"iot:Publish\\\",
                                 \\\"iot:GetThingShadow\\\",
-                                \\\"iot:DeleteThingShadow\\\",
-                                \\\"iot:UpdateThingShadow\\\"
+                                \\\"iot:UpdateThingShadow\\\",
+                                \\\"iot:DeleteThingShadow\\\"
                             ],
                             \\\"Resource\\\" : [
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/foo/bar\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/delete\\\"
