@@ -10,9 +10,9 @@ import sys
 from botocore.exceptions import ClientError
 from OpenSSL import crypto, SSL
 
-from utilities.certgen import (createKeyPair, createCertRequest,
-    createSelfSignedCertificate, createSignedCertificate,
-    createCertFile, loadCertFile)
+from utilities.certgen import (createECDSAKey, createKeyPair,
+    createCertRequest, createSelfSignedCertificate,
+    createSignedCertificate, createCertFile, loadCertFile)
 from utilities.tempgen import (createProvisionTemplate)
 from utilities.uuidgen import (createEWonSerial)
 
@@ -302,7 +302,7 @@ class jitpCommands(object):
         C='', ST='', L='', O='', OU='', CN='rootCA'):
         ''' Generate a rootCA Certificate.
         '''
-        pemFileOut = '{}.pem'.format(certName)
+        crtFileOut = '{}.crt'.format(certName)
         keyFileOut = '{}.key'.format(certName)
 
         # Create rootCA KeyPair
@@ -310,26 +310,26 @@ class jitpCommands(object):
 
         # Create rootCA Certificate
         serialNumber = random.randint(1000000, 9000000)
-        caPem = createSelfSignedCertificate(
+        caCrt = createSelfSignedCertificate(
             caKey, serialNumber, (0, 60*60*24*365*5),
             C=C, ST=ST, L=L, O=O, OU=OU, CN=CN
         )
 
-        # Create rootCA Pem/Key local files
-        createCertFile(pemFileOut, caPem)
-        createCertFile(keyFileOut, caKey)
+        # Create rootCA Crt/Key local files
+        createCertFile(crtFileOut, caCrt, crypto.FILETYPE_PEM)
+        createCertFile(keyFileOut, caKey, crypto.FILETYPE_PEM)
 
-        return caKey, caPem
+        return caKey, caCrt
 
 
-    def generate_verify_cert(self, certName='verifyCert', CA='rootCA', CAPath='./',
-        C='', ST='', L='', O='', OU=''):
+    def generate_verify_cert(self, certName='verifyCert',
+        CA='rootCA', CAPath='./', C='', ST='', L='', O='', OU=''):
         ''' Generate a Verification Certificate.
         '''
-        pemFileOut = '{}.pem'.format(certName)
+        crtFileOut = '{}.crt'.format(certName)
         keyFileOut = '{}.key'.format(certName)
 
-        caPem = loadCertFile('{}.pem'.format(CA), CAPath)
+        caCrt = loadCertFile('{}.crt'.format(CA), CAPath)
         caKey = loadCertFile('{}.key'.format(CA), CAPath)
 
 
@@ -344,22 +344,21 @@ class jitpCommands(object):
 
         # Create verifyCert Certificate
         serialNumber = random.randint(1000000, 9000000)
-        verifyPem = createSignedCertificate(verifyReq, (caPem, caKey), serialNumber, (0, 60*60*24*365*5))
+        verifyCrt = createSignedCertificate(verifyReq, (caCrt, caKey), serialNumber, (0, 60*60*24*365*5))
 
-        # Create verifyCert Pem/Key local files
-        createCertFile(pemFileOut, verifyPem)
-        createCertFile(keyFileOut, verifyKey)
-
+        # Create verifyCert Crt/Key local files
+        createCertFile(crtFileOut, verifyCrt, crypto.FILETYPE_PEM)
+        createCertFile(keyFileOut, verifyKey, crypto.FILETYPE_PEM)
 
         # Register verifyCert/rootCA with AWS IoT
         try:
             roleArn = self.fetch_service_role()['Arn']
             self._iot.register_ca_certificate(
                 caCertificate=str(crypto.dump_certificate(
-                    crypto.FILETYPE_PEM, caPem
+                    crypto.FILETYPE_PEM, caCrt
                 )).decode('utf-8'),
                 verificationCertificate=str(crypto.dump_certificate(
-                    crypto.FILETYPE_PEM, verifyPem
+                    crypto.FILETYPE_PEM, verifyCrt
                 )).decode('utf-8'),
                 setAsActive=True,
                 allowAutoRegistration=True,
@@ -375,10 +374,10 @@ class jitpCommands(object):
 
             self._iot.register_certificate(
                 certificatePem=str(crypto.dump_certificate(
-                    crypto.FILETYPE_PEM, verifyPem
+                    crypto.FILETYPE_PEM, verifyCrt
                 )).decode('utf-8'),
                 caCertificatePem=str(crypto.dump_certificate(
-                    crypto.FILETYPE_PEM, caPem
+                    crypto.FILETYPE_PEM, caCrt
                 )).decode('utf-8'),
                 setAsActive=True
             )
@@ -397,42 +396,47 @@ class jitpCommands(object):
                     'registration encountered unexpected error'
                 ).format(CA, certName), exc_info=True)
 
-        return verifyKey, verifyReq, verifyPem
+        return verifyKey, verifyReq, verifyCrt
 
 
-    def generate_device_cert(self, certName='deviceCert', thingName='thing1',
-            productCode=1, productNumber=1, CA='rootCA', CAPath='./',
+    def generate_device_cert(self, thingName, productCode=1, productNumber=1,
+            certType='RSA', CA='rootCA', CAPath='./',
             C='', ST='', L='', O='', OU=''):
         ''' Generate a Device Certificate.
         '''
-        pemFileOut = '{}.pem'.format(certName)
-        keyFileOut = '{}.key'.format(certName)
+        crtFileOut = '{}.crt'.format(thingName)
+        keyFileOut = '{}.key'.format(thingName)
 
-        caPem = loadCertFile('{}.pem'.format(CA), CAPath)
+        caCrt = loadCertFile('{}.crt'.format(CA), CAPath)
         caKey = loadCertFile('{}.key'.format(CA), CAPath)
 
 
         # Create deviceCert KeyPair
-        deviceKey  = createKeyPair(crypto.TYPE_RSA, 2048)
+        if certType == 'RSA':
+            deviceKey = createKeyPair(crypto.TYPE_RSA, 2048)
+        elif certType == 'EC':
+            deviceKey = createECDSAKey('SECP256R1')
+        else:
+            return 'certificate type not supported. must be of type `RSA` or `EC`'
 
         # Create deviceCert Signing Request
         deviceReq = createCertRequest(deviceKey, C=C, ST=ST, L=L, O=O, OU=OU, CN=thingName)
 
         # Create deviceCert Certificate
         serialNumber = createEWonSerial(productCode, productNumber)
-        devicePem = createSignedCertificate(deviceReq, (caPem, caKey), serialNumber, (0, 60*60*24*365*5))
+        deviceCrt = createSignedCertificate(deviceReq, (caCrt, caKey), serialNumber, (0, 60*60*24*365*5))
 
-        # Create deviceCert Pem/Key local files
-        createCertFile(pemFileOut, devicePem)
-        createCertFile(keyFileOut, deviceKey)
+        # Create deviceCert Crt/Key local files
+        createCertFile(crtFileOut, deviceCrt, crypto.FILETYPE_PEM)
+        createCertFile(keyFileOut, deviceKey, crypto.FILETYPE_PEM)
 
-        return deviceKey, deviceReq, devicePem
+        return deviceKey, deviceReq, deviceCrt
 
 
     def fetch_iot_root_cert(self, certName='root'):
         ''' Download AWS IoT Symantec root CA.
         '''
-        pemFileOut = '{}.cert'.format(certName)
+        crtFileOut = '{}.cert'.format(certName)
 
         # Fetch Symantec rootCA
         resp = requests.get((
@@ -441,8 +445,11 @@ class jitpCommands(object):
             '/VeriSign-Class%203-Public-Primary-Certification-Authority-G5.pem'
         ))
 
+        # Load Symantec rootCA
+        cert = crypto.load_certificate(crypto.FILETYPE_PEM, resp.text)
+
         # Create Symantec rootCA local file
-        createCertFile(pemFileOut, resp.text)
+        createCertFile(crtFileOut, cert, crypto.FILETYPE_PEM)
 
 
 

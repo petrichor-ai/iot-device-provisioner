@@ -77,10 +77,10 @@ PROVISION_TEMPLATE_BODY = \
                             \\\"Action\\\": [
                                 \\\"iot:Publish\\\",
                                 \\\"iot:GetThingShadow\\\",
+                                \\\"iot:DeleteThingShadow\\\",
                                 \\\"iot:UpdateThingShadow\\\"
                             ],
                             \\\"Resource\\\" : [
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/foo/bar\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/delete\\\"
@@ -94,12 +94,19 @@ PROVISION_TEMPLATE_BODY = \
                                 \\\"iot:Receive\\\"
                             ],
                             \\\"Resource\\\" : [
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get/accepted\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/get/accepted\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get/rejected\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/get/rejected\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/accepted\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/update/accepted\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/rejected\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/update/rejected\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/delta\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/update/delta\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/delete/accepted\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/delete/accepted\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/delete/rejected\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/delete/rejected\\\"
                             ]
                         }}

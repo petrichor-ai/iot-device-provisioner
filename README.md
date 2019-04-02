@@ -77,10 +77,24 @@ $ cat deviceCert.pem rootCA.pem > deviceCertAndCACert.pem
 
 Tests:
 
+Python Pub Cli
 ```bash
 $ python pub_client.py -e <AWS-IoT-Endpoint> -p 8883 -r root.cert -c deviceCertAndCACert.pem -k deviceCert.key -n <thingName> -id <clientId>
 ```
 
+Python Sub Cli
 ```bash
 $ python sub_client.py -e <AWS-IoT-Endpoint> -p 8883 -r root.cert -c deviceCertAndCACert.pem -k deviceCert.key -n <thingName> -id <clientId>
+```
+
+Mosquitto Pub CLI
+```bash
+$ mosquitto_pub --cert thing-0.pem --key thing-0.prv --cafile aws-iot-rootCA.crt -h
+XXXXXXXXYYYYY.iot.us-west-2.amazonaws.com -p 8883 -t 'test/thing' -m "Hello from Mosquitto"
+```
+
+Mosquitto Sub CLI
+```bash
+$ mosquitto_sub --cert thing-0.pem --key thing-0.prv --cafile aws-iot-rootCA.crt -h
+XXXXXXXXYYYYY.iot.us-west-2.amazonaws.com -p 8883 -t 'test/+'
 ```
