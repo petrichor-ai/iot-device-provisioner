@@ -16,80 +16,80 @@ log.setLevel(logging.DEBUG)
 PROVISION_TEMPLATE_BODY = \
 """
 {{
-    \"Parameters\" : {{
-        \"AWS::IoT::Certificate::Id\" : {{
-            \"Type\" : \"String\"
+    \"Parameters\": {{
+        \"AWS::IoT::Certificate::Id\": {{
+            \"Type\": \"String\"
         }},
         \"AWS::IoT::Certificate::SerialNumber\" : {{
-            \"Type\" : \"String\"
+            \"Type\": \"String\"
         }},
         \"AWS::IoT::Certificate::CommonName\" : {{
-            \"Type\" : \"String\"
+            \"Type\": \"String\"
         }}
     }},
-    \"Resources\" : {{
-        \"thing\" : {{
-            \"Type\" : \"AWS::IoT::Thing\",
-            \"Properties\" : {{
-                \"ThingName\" : {{
-                    \"Ref\" : \"AWS::IoT::Certificate::CommonName\"
+    \"Resources\": {{
+        \"thing\": {{
+            \"Type\": \"AWS::IoT::Thing\",
+            \"Properties\": {{
+                \"ThingName\": {{
+                    \"Ref\": \"AWS::IoT::Certificate::CommonName\"
                 }},
-                \"AttributePayload\" : {{
-                    \"serial\" : {{
-                        \"Ref\" : \"AWS::IoT::Certificate::SerialNumber\"
+                \"AttributePayload\": {{
+                    \"serial\": {{
+                        \"Ref\": \"AWS::IoT::Certificate::SerialNumber\"
                     }}
                 }}
             }}
         }},
-        \"certificate\" : {{
-            \"Type\" : \"AWS::IoT::Certificate\",
-            \"Properties\" : {{
+        \"certificate\": {{
+            \"Type\": \"AWS::IoT::Certificate\",
+            \"Properties\": {{
                 \"CertificateId\": {{
-                    \"Ref\" : \"AWS::IoT::Certificate::Id\"
+                    \"Ref\": \"AWS::IoT::Certificate::Id\"
                 }},
-                \"Status\" : \"ACTIVE\"
+                \"Status\": \"ACTIVE\"
             }}
         }},
-        \"policy\" : {{
-            \"Type\" : \"AWS::IoT::Policy\",
-            \"Properties\" : {{
-                \"PolicyDocument\" : \"{{
-                    \\\"Version\\\" : \\\"2012-10-17\\\",
-                    \\\"Statement\\\" : [
+        \"policy\": {{
+            \"Type\": \"AWS::IoT::Policy\",
+            \"Properties\": {{
+                \"PolicyDocument\": \"{{
+                    \\\"Version\\\": \\\"2012-10-17\\\",
+                    \\\"Statement\\\": [
                         {{
-                            \\\"Sid\\\" : \\\"MQTTConnect\\\",
-                            \\\"Effect\\\" : \\\"Allow\\\",
-                            \\\"Action\\\" : [
+                            \\\"Sid\\\": \\\"MQTTConnect\\\",
+                            \\\"Effect\\\": \\\"Allow\\\",
+                            \\\"Action\\\": [
                                 \\\"iot:Connect\\\"
                             ],
-                            \\\"Resource\\\" : [
+                            \\\"Resource\\\": [
                                 \\\"arn:aws:iot:{region}:{accountId}:client/${{iot:ClientId}}\\\"
                             ],
-                            \\\"Condition\\\" : {{
-                                \\\"Bool\\\" : {{
-                                    \\\"iot:Connection.Thing.IsAttached\\\" : [\\\"true\\\"]
+                            \\\"Condition\\\": {{
+                                \\\"Bool\\\": {{
+                                    \\\"iot:Connection.Thing.IsAttached\\\": [\\\"true\\\"]
                                 }}
                             }}
                         }},
                         {{
-                            \\\"Sid\\\" : \\\"MQTTPublish\\\",
-                            \\\"Effect\\\" : \\\"Allow\\\",
-                            \\\"Action\\\" : [
+                            \\\"Sid\\\": \\\"MQTTPublish\\\",
+                            \\\"Effect\\\": \\\"Allow\\\",
+                            \\\"Action\\\": [
                                 \\\"iot:Publish\\\"
                             ],
-                            \\\"Resource\\\" : [
+                            \\\"Resource\\\": [
                                 \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/delete\\\"
                             ]
                         }},
                         {{
-                            \\\"Sid\\\" : \\\"MQTTReceive\\\",
-                            \\\"Effect\\\" : \\\"Allow\\\",
-                            \\\"Action\\\" : [
+                            \\\"Sid\\\": \\\"MQTTReceive\\\",
+                            \\\"Effect\\\": \\\"Allow\\\",
+                            \\\"Action\\\": [
                                 \\\"iot:Receive\\\"
                             ],
-                            \\\"Resource\\\" : [
+                            \\\"Resource\\\": [
                                 \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get/accepted\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get/rejected\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/accepted\\\",
@@ -100,12 +100,12 @@ PROVISION_TEMPLATE_BODY = \
                             ]
                         }},
                         {{
-                            \\\"Sid\\\" : \\\"MQTTSubscribe\\\",
-                            \\\"Effect\\\" : \\\"Allow\\\",
-                            \\\"Action\\\" : [
+                            \\\"Sid\\\": \\\"MQTTSubscribe\\\",
+                            \\\"Effect\\\": \\\"Allow\\\",
+                            \\\"Action\\\": [
                                 \\\"iot:Subscribe\\\"
                             ],
-                            \\\"Resource\\\" : [
+                            \\\"Resource\\\": [
                                 \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/get/accepted\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/get/rejected\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/update/accepted\\\",
