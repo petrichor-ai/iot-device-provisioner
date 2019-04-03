@@ -20,10 +20,10 @@ PROVISION_TEMPLATE_BODY = \
         \"AWS::IoT::Certificate::Id\": {{
             \"Type\": \"String\"
         }},
-        \"AWS::IoT::Certificate::SerialNumber\" : {{
+        \"AWS::IoT::Certificate::SerialNumber\": {{
             \"Type\": \"String\"
         }},
-        \"AWS::IoT::Certificate::CommonName\" : {{
+        \"AWS::IoT::Certificate::CommonName\": {{
             \"Type\": \"String\"
         }}
     }},
@@ -70,6 +70,20 @@ PROVISION_TEMPLATE_BODY = \
                                     \\\"iot:Connection.Thing.IsAttached\\\": [\\\"true\\\"]
                                 }}
                             }}
+                        }},
+                        {{
+                            \\\"Sid\\\": \\\"MQTTShadow\\\",
+                            \\\"Effect\\\": \\\"Allow\\\",
+                            \\\"Action\\\": [
+                                \\\"iot:GetThingShadow\\\",
+                                \\\"iot:UpdateThingShadow\\\",
+                                \\\"iot:DeleteThingShadow\\\"
+                            ],
+                            \\\"Resource\\\": [
+                                \\\"arn:aws:iot:{region}:{accountId}:thing/${{iot:ClientId}}\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:thing/${{iot:ClientId}}\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:thing/${{iot:ClientId}}\\\"
+                            ]
                         }},
                         {{
                             \\\"Sid\\\": \\\"MQTTPublish\\\",
