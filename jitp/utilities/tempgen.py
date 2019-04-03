@@ -73,18 +73,10 @@ PROVISION_TEMPLATE_BODY = \
                         {{
                             \\\"Effect\\\": \\\"Allow\\\",
                             \\\"Action\\\": [
+                                \\\"iot:Publish\\\",
                                 \\\"iot:GetThingShadow\\\",
                                 \\\"iot:UpdateThingShadow\\\",
                                 \\\"iot:DeleteThingShadow\\\"
-                            ],
-                            \\\"Resource\\\": [
-                                \\\"arn:aws:iot:{region}:{accountId}:thing/${{iot:ClientId}}\\\"
-                            ]
-                        }},
-                        {{
-                            \\\"Effect\\\": \\\"Allow\\\",
-                            \\\"Action\\\": [
-                                \\\"iot:Publish\\\"
                             ],
                             \\\"Resource\\\": [
                                 \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/+\\\"
@@ -93,23 +85,16 @@ PROVISION_TEMPLATE_BODY = \
                         {{
                             \\\"Effect\\\": \\\"Allow\\\",
                             \\\"Action\\\": [
+                                \\\"iot:Subscribe\\\",
                                 \\\"iot:Receive\\\"
-                            ],
-                            \\\"Resource\\\": [
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get/+\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/+\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/delete/+\\\"
-                            ]
-                        }},
-                        {{
-                            \\\"Effect\\\": \\\"Allow\\\",
-                            \\\"Action\\\": [
-                                \\\"iot:Subscribe\\\"
                             ],
                             \\\"Resource\\\": [
                                 \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/get/+\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/update/+\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/delete/+\\\"
+                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/delete/+\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get/+\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/+\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/delete/+\\\"
                             ]
                         }}
                     ]
