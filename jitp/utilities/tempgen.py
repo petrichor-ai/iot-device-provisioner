@@ -54,10 +54,9 @@ PROVISION_TEMPLATE_BODY = \
             \"Type\": \"AWS::IoT::Policy\",
             \"Properties\": {{
                 \"PolicyDocument\": \"{{
-                    \\\"Version\\\": \\\"2012-10-17\\\",
+                    \\\"Version\\\":\\\"2012-10-17\\\",
                     \\\"Statement\\\": [
                         {{
-                            \\\"Sid\\\": \\\"MQTTConnect\\\",
                             \\\"Effect\\\": \\\"Allow\\\",
                             \\\"Action\\\": [
                                 \\\"iot:Connect\\\"
@@ -72,7 +71,6 @@ PROVISION_TEMPLATE_BODY = \
                             }}
                         }},
                         {{
-                            \\\"Sid\\\": \\\"MQTTShadow\\\",
                             \\\"Effect\\\": \\\"Allow\\\",
                             \\\"Action\\\": [
                                 \\\"iot:GetThingShadow\\\",
@@ -80,53 +78,38 @@ PROVISION_TEMPLATE_BODY = \
                                 \\\"iot:DeleteThingShadow\\\"
                             ],
                             \\\"Resource\\\": [
-                                \\\"arn:aws:iot:{region}:{accountId}:thing/${{iot:ClientId}}\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:thing/${{iot:ClientId}}\\\",
                                 \\\"arn:aws:iot:{region}:{accountId}:thing/${{iot:ClientId}}\\\"
                             ]
                         }},
                         {{
-                            \\\"Sid\\\": \\\"MQTTPublish\\\",
                             \\\"Effect\\\": \\\"Allow\\\",
                             \\\"Action\\\": [
                                 \\\"iot:Publish\\\"
                             ],
                             \\\"Resource\\\": [
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/delete\\\"
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/+\\\"
                             ]
                         }},
                         {{
-                            \\\"Sid\\\": \\\"MQTTReceive\\\",
                             \\\"Effect\\\": \\\"Allow\\\",
                             \\\"Action\\\": [
                                 \\\"iot:Receive\\\"
                             ],
                             \\\"Resource\\\": [
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get/accepted\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get/rejected\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/accepted\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/rejected\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/delta\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/delete/accepted\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/delete/rejected\\\"
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get/+\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/+\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/delete/+\\\"
                             ]
                         }},
                         {{
-                            \\\"Sid\\\": \\\"MQTTSubscribe\\\",
                             \\\"Effect\\\": \\\"Allow\\\",
                             \\\"Action\\\": [
                                 \\\"iot:Subscribe\\\"
                             ],
                             \\\"Resource\\\": [
-                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/get/accepted\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/get/rejected\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/update/accepted\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/update/rejected\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/update/delta\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/delete/accepted\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/delete/rejected\\\"
+                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/get/+\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/update/+\\\",
+                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/delete/+\\\"
                             ]
                         }}
                     ]

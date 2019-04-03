@@ -306,7 +306,7 @@ class jitpCommands(object):
         keyFileOut = '{}.key'.format(certName)
 
         # Create rootCA KeyPair
-        caKey  = createKeyPair(crypto.TYPE_RSA, 2048)
+        caKey = createKeyPair(crypto.TYPE_RSA, 2048)
 
         # Create rootCA Certificate
         serialNumber = random.randint(1000000, 9000000)
@@ -389,7 +389,7 @@ class jitpCommands(object):
         except ClientError as e:
             if e.response['Error']['Code'] == 'ResourceAlreadyExistsException':
                 log.error(e.response['Error']['Message'])
-                log.info('Regenerate rootCA and retry...')
+                log.info('Regenerate rootCA and retry...', exc_info=True)
             else:
                 log.error((
                     'AWS IoT CA and Verify Certificate: {} {}, ' +
