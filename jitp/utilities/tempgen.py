@@ -64,22 +64,32 @@ PROVISION_TEMPLATE_BODY = \
                             \\\"Resource\\\": [
                                 \\\"arn:aws:iot:{region}:{accountId}:client/${{iot:ClientId}}\\\"
                             ],
-                            \\\"Condition\\\": {{
+                            \\\"Condition\\": {{
                                 \\\"Bool\\\": {{
-                                    \\\"iot:Connection.Thing.IsAttached\\\": [\\\"true\\\"]
+                                    \\\"iot:Connection.Thing.IsAttached\\\": [
+                                        \\\"true\\\"
+                                    ]
                                 }}
                             }}
                         }},
                         {{
                             \\\"Effect\\\": \\\"Allow\\\",
                             \\\"Action\\\": [
-                                \\\"iot:Publish\\\",
                                 \\\"iot:GetThingShadow\\\",
                                 \\\"iot:UpdateThingShadow\\\",
                                 \\\"iot:DeleteThingShadow\\\"
                             ],
                             \\\"Resource\\\": [
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/+\\\"
+                                \\\"*\\\"
+                            ]
+                        }},
+                        {{
+                            \\\"Effect\\\": \\\"Allow\\\",
+                            \\\"Action\\\": [
+                                \\\"iot:Publish\\\"
+                            ],
+                            \\\"Resource\\\": [
+                                \\\"*\\\"
                             ]
                         }},
                         {{
@@ -89,12 +99,7 @@ PROVISION_TEMPLATE_BODY = \
                                 \\\"iot:Receive\\\"
                             ],
                             \\\"Resource\\\": [
-                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/get/+\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/update/+\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topicfilter/$aws/things/${{iot:ClientId}}/shadow/delete/+\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/get/+\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/update/+\\\",
-                                \\\"arn:aws:iot:{region}:{accountId}:topic/$aws/things/${{iot:ClientId}}/shadow/delete/+\\\"
+                                \\\"*\\\"
                             ]
                         }}
                     ]
