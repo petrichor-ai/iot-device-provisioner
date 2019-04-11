@@ -4,6 +4,7 @@
 *.pem
 *.csr
 *.cert
+certificates/
 
 #vim
 *.swp
