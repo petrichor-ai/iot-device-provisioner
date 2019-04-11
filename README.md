@@ -63,10 +63,10 @@ $ jitp generate-verify-cert \
 Generate a Device Certificate,
 ```bash
 $ jitp generate-device-cert \
-    --certName               (default 'deviceCert')
-    --thingName              (default 'thing1')
+    --thingName              (required)
     --productCode            (default 1)
     --productNumber          (default 1)
+    --certType               (default 'RSA' or 'EC')
     --CA                     (default 'rootCA')
     --CAPath                 (default './')
     --C                      (Optional)
