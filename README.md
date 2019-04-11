@@ -82,7 +82,7 @@ $ cat deviceCert.pem rootCA.pem > deviceCertAndCACert.pem
 ```
 
 
-Tests:
+Examples:
 
 Python Pub Cli
 ```bash
