@@ -17,25 +17,25 @@ $ pip install git+https://github.com/petrichor-ai/iot-device-provisioner.git
 
 ### Commands:
 
-Create a IAM Service Role,
+- Create a IAM Service Role,
 ```bash
 $ jitp create-service-role \
     --roleName               (default 'IoT_JITP_Role')
 ```
 
-Delete a IAM Service Role,
+- Delete a IAM Service Role,
 ```bash
 $ jitp delete-service-role \
     --roleName               (default 'IoT_JITP_Role')
 ```
 
-Fetch a IAM Service Role,
+- Fetch a IAM Service Role,
 ```bash
 $ jitp fetch-service-role \
     --roleName               (default 'IoT_JITP_Role')
 ```
 
-Generate a rootCA Certificate,
+- Generate a rootCA Certificate,
 ```bash
 $ jitp generate-rootCA-cert \
     --certName               (default 'rootCA')
@@ -47,7 +47,7 @@ $ jitp generate-rootCA-cert \
     --CN                     (default 'rootCA')
 ```
 
-Generate a Verify Certificate,
+- Generate a Verify Certificate,
 ```bash
 $ jitp generate-verify-cert \
     --certName               (default 'verifyCert')
@@ -60,7 +60,7 @@ $ jitp generate-verify-cert \
     --OU                     (Optional)
 ```
 
-Generate a Device Certificate,
+- Generate a Device Certificate,
 ```bash
 $ jitp generate-device-cert \
     --thingName              (required)
@@ -75,6 +75,13 @@ $ jitp generate-device-cert \
     --O                      (Optional)
     --OU                     (Optional)
 ```
+
+- Fetch AWS IoT root Certificate,
+```bash
+$ jitp fetch-iot-root-cert \
+    --certName              (default 'root')
+```
+
 
 Chain Device and rootCA Certificates,
 ```bash
