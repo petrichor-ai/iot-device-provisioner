@@ -1,37 +1,41 @@
-# iot-device-provisioner
+# AWS IoT-Device-Provisioner
 
 
-Linux (Ubuntu/Debian) Prerequisites:
+## Linux (Ubuntu/Debian) Prerequisites:
 
 ```bash
 $ sudo apt-get install build-essential libssl-dev libffi-dev python-dev
 ```
 
 
-Installation:
+## Installation:
 
 ```bash
 $ pip install git+https://github.com/petrichor-ai/iot-device-provisioner.git
 ```
 
 
-Commands:
+## Commands:
 
+Create a IAM Service Role,
 ```bash
 $ jitp create-service-role \
     --roleName               (default 'IoT_JITP_Role')
 ```
 
+Delete a IAM Service Role,
 ```bash
 $ jitp delete-service-role \
     --roleName               (default 'IoT_JITP_Role')
 ```
 
+Fetch a IAM Service Role,
 ```bash
 $ jitp fetch-service-role \
     --roleName               (default 'IoT_JITP_Role')
 ```
 
+Generate a rootCA Certificate,
 ```bash
 $ jitp generate-rootCA-cert \
     --certName               (default 'rootCA')
@@ -43,6 +47,7 @@ $ jitp generate-rootCA-cert \
     --CN                     (default 'rootCA')
 ```
 
+Generate a Verify Certificate,
 ```bash
 $ jitp generate-verify-cert \
     --certName               (default 'verifyCert')
@@ -55,6 +60,7 @@ $ jitp generate-verify-cert \
     --OU                     (Optional)
 ```
 
+Generate a Device Certificate,
 ```bash
 $ jitp generate-device-cert \
     --certName               (default 'deviceCert')
@@ -70,6 +76,7 @@ $ jitp generate-device-cert \
     --OU                     (Optional)
 ```
 
+Chain Device and rootCA Certificates,
 ```bash
 $ cat deviceCert.pem rootCA.pem > deviceCertAndCACert.pem
 ```
