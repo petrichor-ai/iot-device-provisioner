@@ -1,21 +1,21 @@
-# AWS IoT-Device-Provisioner (JITP)
+## AWS IoT-Device-Provisioner (JITP)
 
 
-## Linux (Ubuntu/Debian) Prerequisites:
+### Linux (Ubuntu/Debian) Prerequisites:
 
 ```bash
 $ sudo apt-get install build-essential libssl-dev libffi-dev python-dev
 ```
 
 
-## Installation:
+### Installation:
 
 ```bash
 $ pip install git+https://github.com/petrichor-ai/iot-device-provisioner.git
 ```
 
 
-## Commands:
+### Commands:
 
 Create a IAM Service Role,
 ```bash
@@ -82,7 +82,7 @@ $ cat deviceCert.pem rootCA.pem > deviceCertAndCACert.pem
 ```
 
 
-Examples:
+### Examples:
 
 Python Pub Cli
 ```bash
