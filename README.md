@@ -1,4 +1,4 @@
-# AWS IoT-Device-Provisioner
+# AWS IoT-Device-Provisioner (JITP)
 
 
 ## Linux (Ubuntu/Debian) Prerequisites:
